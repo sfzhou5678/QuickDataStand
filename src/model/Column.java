@@ -130,6 +130,7 @@ public class Column {
      * @return
      */
     private String analyzeDataType(List<String> strings) {
+        // TODO: 2017/2/22 加入TYPE分析, 可以用机器学习
         return TYPE_NUM;
     }
 
@@ -156,6 +157,7 @@ public class Column {
      * @return
      */
     private boolean doChangeAddInType(String targetType) {
+        // FIXME: 2017/2/22 这一块逻辑太乱，需要考虑是否将addin合并进Column
         try {
             if (addIn instanceof NumAddIn) {
                 List<Double> oriDatas = ((NumAddIn) addIn).getOriDatas();

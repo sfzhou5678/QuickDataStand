@@ -1,5 +1,6 @@
 package model.addin;
 
+import model.DataRepo;
 import tools.Counter;
 import tools.RegexTool;
 
@@ -29,6 +30,8 @@ public class NumAddIn implements AddIn {
 
     private boolean sortReverse = false;
     private int validCount = 0;
+
+//    DataRepo<Double> dataRepo=new DataRepo<Double>();
 
     List<Integer> selectedIndex;
 
@@ -80,26 +83,6 @@ public class NumAddIn implements AddIn {
     }
 
     /**
-     * 将原始数据转换为有效数据(主要针对str->num)，将非数字数据记作errorValue，空值记作emptyValue
-     */
-    private void getOriDatas(List<String> strDatas) {
-        // TODO: 2017/2/22 数据有效性的判断应该放在Col中
-        oriDatas=new ArrayList<Double>();
-        curDatas=new ArrayList<Double>();
-        for (String str : strDatas) {
-            if(str.isEmpty()){
-                oriDatas.add(emptyValue);
-            }else if(!RegexTool.isNum(str)){
-                oriDatas.add(errorValue);
-            }else {
-                double num = Double.valueOf(str);
-                oriDatas.add(num);
-            }
-        }
-        curDatas.addAll(oriDatas);
-    }
-
-    /**
      * 更新sortedDatas
      */
     @Override
@@ -126,6 +109,40 @@ public class NumAddIn implements AddIn {
                 }
             }
         });
+    }
+
+    @Override
+    public void updateValidCount() {
+        validCount=0;
+        for (Double data:curDatas){
+            if (data.equals(errorValue) || data.equals(emptyValue)) {
+                continue;
+            }
+            validCount++;
+        }
+    }
+
+    /**
+     * 将原始数据转换为有效数据(主要针对str->num)，将非数字数据记作errorValue，空值记作emptyValue
+     */
+    private void getOriDatas(List<String> strDatas) {
+        // TODO: 2017/2/22 数据有效性的判断应该放在Col中
+        oriDatas=new ArrayList<Double>();
+        curDatas=new ArrayList<Double>();
+        for (String str : strDatas) {
+            if(str.isEmpty()){
+                oriDatas.add(emptyValue);
+            }else if(!RegexTool.isNum(str)){
+                oriDatas.add(errorValue);
+            }else {
+                double num = Double.valueOf(str);
+                oriDatas.add(num);
+            }
+        }
+        curDatas.addAll(oriDatas);
+//
+//        dataRepo.setOriDatas(oriDatas);
+//        dataRepo.setCurDatas(curDatas);
     }
 
     /**
@@ -155,6 +172,8 @@ public class NumAddIn implements AddIn {
         curDatas=newValidDatas;
         updateDataInfo();
     }
+
+
 
     /**
      * 鼠标选中某级列tag，然后显示这几列的详情
@@ -238,7 +257,6 @@ public class NumAddIn implements AddIn {
         updateDataInfo();
         clearSelectedIndex();
     }
-
     /**
      * 每次操作之后，清空选中的tag列
      */
@@ -246,6 +264,7 @@ public class NumAddIn implements AddIn {
     public void clearSelectedIndex() {
         selectedIndex=new ArrayList<Integer>();
     }
+
     /**
      * 在当前有效数据中筛选出大于某个值的
      *
@@ -262,17 +281,6 @@ public class NumAddIn implements AddIn {
      */
     public void selectDataSmallerThan(double target) {
         // 暂时不做
-    }
-
-    @Override
-    public void updateValidCount() {
-        validCount=0;
-        for (Double data:curDatas){
-            if (data.equals(errorValue) || data.equals(emptyValue)) {
-                continue;
-            }
-            validCount++;
-        }
     }
 
     @Override
