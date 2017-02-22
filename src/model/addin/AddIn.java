@@ -9,10 +9,10 @@ import java.util.List;
 public interface AddIn {
     void commandShow();
 
-    // 下面3条可以想办法提出来
-    void updateValidCount();
-    void updateDataInfo();
-    void updateSortedDatas();
+//    // 下面3条可以想办法提出来
+//    void updateValidCount();
+//    void updateDataInfo();
+//    void updateSortedDatas();
 
     void selectTopNPercentData(double percent);
 

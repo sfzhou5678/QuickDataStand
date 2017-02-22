@@ -2,6 +2,7 @@ package model.repository;
 
 import model.addin.NumAddIn;
 import tools.Counter;
+import tools.RegexTool;
 
 import java.util.*;
 
@@ -25,6 +26,144 @@ public class NumRepo extends DataRepo {
      */
     List<Map.Entry<Double, Integer>> sortedDatas;
     private Counter<Double> counter;    // 和sortedDatas配套使用
+
+    private double min = 0.0;
+    private double max = 0.0;
+    private double sum = 0.0;
+
+    private double ave = 0.0;
+    private double median = 0.0;
+    private double standardDeviation = 0.0;
+
+    public NumRepo(List<String> displayDatas) {
+        getOriDatas(displayDatas);
+    }
+
+    /**
+     * 将原始数据转换为有效数据(主要针对str->num)，将非数字数据记作errorValue，空值记作emptyValue
+     */
+    private void getOriDatas(List<String> strDatas) {
+        oriDatas=new ArrayList<Double>();
+        curDatas=new ArrayList<Double>();
+        for (String str : strDatas) {
+            if(str.isEmpty()){
+                oriDatas.add(NumAddIn.emptyValue);
+            }else if(!RegexTool.isNum(str)){
+                oriDatas.add(NumAddIn.errorValue);
+            }else {
+                double num = Double.valueOf(str);
+                oriDatas.add(num);
+            }
+        }
+        curDatas.addAll(oriDatas);
+        updateDataInfo();
+    }
+
+    /**
+     * 选出能构成前percent%权重的数据集
+     *
+     * @param percent
+     */
+    public void selectTopNPercentData(double percent) {
+        List<Double> needKeepDatas = new ArrayList<Double>();
+        int curSum = 0;
+        for (int i = 0; i < sortedDatas.size(); i++) {
+            curSum += sortedDatas.get(i).getValue();
+            needKeepDatas.add(sortedDatas.get(i).getKey());
+            if (curSum >= (int) (percent * validCount)) {
+                break;
+            }
+        }
+        List<Double> newValidDatas = new ArrayList<Double>();
+        for (Double key : needKeepDatas) {
+            for (Double data : curDatas) {
+                if (key.equals(data)) {
+                    newValidDatas.add(data);
+                }
+            }
+        }
+        curDatas=newValidDatas;
+        updateDataInfo();
+    }
+
+    /**
+     * 在curDatas中仅保留选中的这几列
+     */
+    public void keepOnlyCurSelectedIndex(List<Integer> selectedIndex) {
+        List<Double> newCurDatas=new ArrayList<Double>();
+        for (Integer index:selectedIndex){
+            Double key=sortedDatas.get(index).getKey();
+            for (Double data:curDatas){
+                if (data.equals(key)){
+                    newCurDatas.add(data);
+                }
+            }
+        }
+        curDatas=newCurDatas;
+        updateDataInfo();
+    }
+
+    /**
+     * 在curDatas中删除选中的这几列
+     */
+    public void deleteCurSelectedIndex(List<Integer> selectedIndex) {
+        List<Double> newCurDatas=new ArrayList<Double>();
+        for (Double data:curDatas){
+            boolean needDelete=false;
+            for (Integer index:selectedIndex){
+                Double key=sortedDatas.get(index).getKey();
+                if (data.equals(key)){
+                    needDelete=true;
+                }
+            }
+            if (!needDelete){
+                newCurDatas.add(data);
+            }
+        }
+        curDatas=newCurDatas;
+        updateDataInfo();
+    }
+
+    /**
+     * 替换当前选中tag列的值
+     */
+    public void replaceValue(Object o, List<Integer> selectedIndex) {
+        Double value=(Double)o;
+        for (Integer index:selectedIndex){
+            Double key=sortedDatas.get(index).getKey();
+            for (int i=0;i<curDatas.size();i++){
+                if (curDatas.get(i).equals(key)){
+                    curDatas.set(i,value);
+                }
+            }
+        }
+        updateDataInfo();
+    }
+
+    /**
+     * 在保证validDatas已经更新过的前提下，更新当前数据的状态
+     * */
+    private void updateDataInfo() {
+        updateValidCount();
+        sum = 0;
+        min = Double.POSITIVE_INFINITY;
+        max = Double.NEGATIVE_INFINITY;
+        for (Double data : curDatas) {
+            if (data.equals(NumAddIn.errorValue) || data.equals(NumAddIn.emptyValue)) {
+                // 跳过空值不作处理
+                continue;
+            }
+            sum += data;
+            min = Math.min(min, data);
+            max = Math.max(max, data);
+        }
+        ave = sum / validCount;
+//            calculateMedian();
+//            calculateSD();
+
+        updateSortedDatas();
+    }
+
 
     /**
      * NOTE:目前的技术还没发将ValidCounter放到Repo中
@@ -70,6 +209,11 @@ public class NumRepo extends DataRepo {
         });
     }
 
+    public void resumeOriDatas() {
+        curDatas=oriDatas;
+        updateDataInfo();
+    }
+
     public List<Double> getOriDatas() {
         return oriDatas;
     }
@@ -92,5 +236,29 @@ public class NumRepo extends DataRepo {
 
     public void setSortedDatas(List<Map.Entry<Double, Integer>> sortedDatas) {
         this.sortedDatas = sortedDatas;
+    }
+
+    public double getMin() {
+        return min;
+    }
+
+    public double getMax() {
+        return max;
+    }
+
+    public double getSum() {
+        return sum;
+    }
+
+    public double getAve() {
+        return ave;
+    }
+
+    public double getMedian() {
+        return median;
+    }
+
+    public double getStandardDeviation() {
+        return standardDeviation;
     }
 }

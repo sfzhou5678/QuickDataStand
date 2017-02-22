@@ -49,7 +49,6 @@ public class StringAddIn implements AddIn {
     /**
      * 在保证validDatas已经更新过的前提下，更新当前数据的状态
      * */
-    @Override
     public void updateDataInfo() {
         updateValidCount();
         for (String data : curDatas) {
@@ -65,7 +64,6 @@ public class StringAddIn implements AddIn {
     /**
      * 更新sortedDatas
      */
-    @Override
     public void updateSortedDatas() {
         // FIXME: 2017/2/22 调用selectTopNPercentData之后还要更新validData，counter等，这块需要重新设计
         counter = new Counter<String >();
@@ -209,7 +207,6 @@ public class StringAddIn implements AddIn {
         selectedIndex=new ArrayList<Integer>();
     }
 
-    @Override
     public void updateValidCount() {
         validCount=0;
         for (String data:curDatas){

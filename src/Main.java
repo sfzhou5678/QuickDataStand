@@ -19,12 +19,10 @@ public class Main {
 //            column.commandShow();
         }
         // 查看初始状态
-//        Column curSelectedCol=newColumns.get(5);
-        Column curSelectedCol=newColumns.get(14);
+        Column curSelectedCol=newColumns.get(5);
+//        Column curSelectedCol=newColumns.get(14);
         curSelectedCol.commandShowAddIn();
 
-        // TODO: 2017/2/22 切换类型
-//        curSelectedCol.changeType(Column.TYPE_ABC);
         AddIn addIn=curSelectedCol.getAddIn();
 
         System.out.println("=======选择构成前80%权重的数据tag=======");
@@ -41,12 +39,13 @@ public class Main {
         addIn.deleteCurSelectedIndex();
         curSelectedCol.commandShowAddIn();
 
-        if(curSelectedCol.changeType(Column.TYPE_NUM)){
-            System.out.println("转换类型成功");
-            addIn=curSelectedCol.getAddIn();
-        }else {
-            System.out.println("转换类型失败，请检查数据内容是否正确");
-        }
+        System.out.println("=======转换类型=======");
+//        if(curSelectedCol.changeType(Column.TYPE_NUM)){
+//            System.out.println("转换类型成功");
+//            addIn=curSelectedCol.getAddIn();
+//        }else {
+//            System.out.println("转换类型失败，请检查数据内容是否正确");
+//        }
         System.out.println("=======仅保留选中列的tag=======");
         addIn.selectTagByIndex(indexs);
         addIn.keepOnlyCurSelectedIndex();
