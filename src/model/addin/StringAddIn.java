@@ -6,48 +6,38 @@ import tools.RegexTool;
 import java.util.*;
 
 /**
- * 处理num形式数据的插件
- * 可以用于展示平均数、最大最小值、中位数、标准差、四分位数等
- * Created by zsf on 2017/2/21.
+ * Created by zsf on 2017/2/22.
  */
-public class NumAddIn extends AddIn {
+public class StringAddIn extends AddIn {
     /**
      * 原始输入的数据，用于恢复原状
      */
-    List<Double> oriDatas = new ArrayList<Double>();
+    List<String> oriDatas = new ArrayList<String>();
 
     /**
      * 当前保留下来的所有数据，但是包含空值和错误值
      */
-    List<Double> curDatas = new ArrayList<Double>();
+    List<String> curDatas = new ArrayList<String>();
 
     /**
      * curDatas按次数排序后的结果，存储在sortedDatas中
      */
-    List<Map.Entry<Double, Integer>> sortedDatas;
-    private Counter<Double> counter;    // 和sortedDatas配套使用
+    List<Map.Entry<String, Integer>> sortedDatas;
+    private Counter<String> counter;    // 和sortedDatas配套使用
 
     private boolean sortReverse = false;
-    private int validCount = 0;
 
     List<Integer> selectedIndex;
 
-    private double min = 0.0;
-
-    private double max = 0.0;
-    private double sum = 0.0;
-
-    private double ave = 0.0;
-    private double median = 0.0;
-    private double standardDeviation = 0.0;
+    private int validCount = 0;
 
     // TODO: 2017/2/22 数据类型还是应该封装到类中
     public static final double errorValue = Double.NEGATIVE_INFINITY;
     public static final double emptyValue = Double.NaN;
 
 
-    public NumAddIn(List<String> oriDatas) {
-        getOriDatas(oriDatas);
+    public StringAddIn(List<String> oriDatas) {
+        this.oriDatas=oriDatas;
         updateDataInfo();
     }
 
@@ -56,43 +46,14 @@ public class NumAddIn extends AddIn {
      * */
     private void updateDataInfo() {
         updateValidCount();
-        sum = 0;
-        min = Double.POSITIVE_INFINITY;
-        max = Double.NEGATIVE_INFINITY;
-        for (Double data : curDatas) {
-            if (data.equals(errorValue) || data.equals(emptyValue)) {
+        for (String data : curDatas) {
+            // TODO: 2017/2/22 类型判断
+            if (false) {
                 // 跳过空值不作处理
                 continue;
             }
-            sum += data;
-            min = Math.min(min, data);
-            max = Math.max(max, data);
         }
-        ave = sum / validCount;
-//            calculateMedian();
-//            calculateSD();
-
         updateSortedDatas();
-    }
-
-    /**
-     * 将原始数据转换为有效数据(主要针对str->num)，将非数字数据记作errorValue，空值记作emptyValue
-     */
-    private void getOriDatas(List<String> strDatas) {
-        // TODO: 2017/2/22 数据有效性的判断应该放在Col中
-        oriDatas=new ArrayList<Double>();
-        curDatas=new ArrayList<Double>();
-        for (String str : strDatas) {
-            if(str.isEmpty()){
-                oriDatas.add(emptyValue);
-            }else if(!RegexTool.isNum(str)){
-                oriDatas.add(errorValue);
-            }else {
-                double num = Double.valueOf(str);
-                oriDatas.add(num);
-            }
-        }
-        curDatas.addAll(oriDatas);
     }
 
     /**
@@ -100,18 +61,18 @@ public class NumAddIn extends AddIn {
      */
     private void updateSortedDatas() {
         // FIXME: 2017/2/22 调用selectTopNPercentData之后还要更新validData，counter等，这块需要重新设计
-        counter = new Counter<Double>();
-        for (Double num : curDatas) {
-            counter.count(num);
+        counter = new Counter<String >();
+        for (String data : curDatas) {
+            counter.count(data);
         }
         // 默认词频统计
         // TODO: 2017/2/21 这一块应该移到basicBarAddIn中去
-        Map<Double, Integer> counterMap = counter.getAllKeysStatistics();
+        Map<String, Integer> counterMap = counter.getAllKeysStatistics();
         // TODO: 2017/2/21 下面代码重构进BarItem
-        sortedDatas = new ArrayList<Map.Entry<Double, Integer>>(counterMap.entrySet());
-        Collections.sort(sortedDatas, new Comparator<Map.Entry<Double, Integer>>() {
-            public int compare(Map.Entry<Double, Integer> o1,
-                               Map.Entry<Double, Integer> o2) {
+        sortedDatas = new ArrayList<Map.Entry<String, Integer>>(counterMap.entrySet());
+        Collections.sort(sortedDatas, new Comparator<Map.Entry<String, Integer>>() {
+            public int compare(Map.Entry<String, Integer> o1,
+                               Map.Entry<String, Integer> o2) {
                 if (sortReverse) {
                     // 从小到大
                     return (o1.getValue() - o2.getValue());
@@ -129,7 +90,7 @@ public class NumAddIn extends AddIn {
      * @param percent
      */
     public void selectTopNPercentData(double percent) {
-        List<Double> needKeepDatas = new ArrayList<Double>();
+        List<String> needKeepDatas = new ArrayList<String>();
         int curSum = 0;
         for (int i = 0; i < sortedDatas.size(); i++) {
             curSum += sortedDatas.get(i).getValue();
@@ -138,9 +99,9 @@ public class NumAddIn extends AddIn {
                 break;
             }
         }
-        List<Double> newValidDatas = new ArrayList<Double>();
-        for (Double key : needKeepDatas) {
-            for (Double data : curDatas) {
+        List<String> newValidDatas = new ArrayList<String>();
+        for (String key : needKeepDatas) {
+            for (String data : curDatas) {
                 if (key.equals(data)) {
                     newValidDatas.add(data);
                 }
@@ -166,10 +127,10 @@ public class NumAddIn extends AddIn {
      * 在curDatas中仅保留选中的这几列
      */
     public void keepOnlyCurSelectedIndex(){
-        List<Double> newCurDatas=new ArrayList<Double>();
+        List<String> newCurDatas=new ArrayList<String>();
         for (Integer index:selectedIndex){
-            Double key=sortedDatas.get(index).getKey();
-            for (Double data:curDatas){
+            String key=sortedDatas.get(index).getKey();
+            for (String data:curDatas){
                 if (data.equals(key)){
                     newCurDatas.add(data);
                 }
@@ -184,11 +145,11 @@ public class NumAddIn extends AddIn {
      * 在curDatas中删除选中的这几列
      */
     public void deleteCurSelectedIndex(){
-        List<Double> newCurDatas=new ArrayList<Double>();
-        for (Double data:curDatas){
+        List<String> newCurDatas=new ArrayList<String>();
+        for (String data:curDatas){
             boolean needDelete=false;
             for (Integer index:selectedIndex){
-                Double key=sortedDatas.get(index).getKey();
+                String key=sortedDatas.get(index).getKey();
                 if (data.equals(key)){
                     needDelete=true;
                 }
@@ -206,9 +167,9 @@ public class NumAddIn extends AddIn {
      * 替换当前选中tag列的值
      * @param value
      */
-    public void replaceValue(Double value){
+    public void replaceValue(String value){
         for (Integer index:selectedIndex){
-            Double key=sortedDatas.get(index).getKey();
+            String key=sortedDatas.get(index).getKey();
             for (int i=0;i<curDatas.size();i++){
                 if (curDatas.get(i).equals(key)){
                     curDatas.set(i,value);
@@ -254,8 +215,8 @@ public class NumAddIn extends AddIn {
 
     private void updateValidCount() {
         validCount=0;
-        for (Double data:curDatas){
-            if (data.equals(errorValue) || data.equals(emptyValue)) {
+        for (String data:curDatas){
+            if (false) {
                 continue;
             }
             validCount++;
@@ -266,8 +227,8 @@ public class NumAddIn extends AddIn {
     public void commandShow() {
         showCounterMap();
 
-        System.out.println(String.format("total:%d valid:%d max:%f min:%f sum:%f ave:%f median:%f sd:%f",
-                curDatas.size(), validCount, min, max, sum, ave, median, standardDeviation));
+//        System.out.println(String.format("total:%d valid:%d max:%f min:%f sum:%f ave:%f median:%f sd:%f",
+//                curDatas.size(), validCount, min, max, sum, ave, median, standardDeviation));
     }
 
     /**

@@ -2,6 +2,7 @@ package model;
 
 import model.addin.AddIn;
 import model.addin.NumAddIn;
+import model.addin.StringAddIn;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -79,11 +80,13 @@ public class Column {
                         newColumn.setColHeader(newHeaders[i]);
                     }
                     newColumn.setDatas(splitedDataList.get(i));
-                    newColumn.setDataType(analyzeDataType(splitedDataList.get(i)));
                     if (i==5){
                         // FIXME: 2017/2/21 特例：第五列刚好是age
+                        newColumn.setDataType(analyzeDataType(splitedDataList.get(i)));
                         newColumn.generateAddInByType();
-//                        newColumn.commandShowAddIn();
+                    }else {
+                        newColumn.setDataType(TYPE_ABC);
+                        newColumn.generateAddInByType();
                     }
                     newColumns.add(newColumn);
                 }
@@ -114,7 +117,8 @@ public class Column {
             AddIn addIn = null;
             if (dataType.equals(TYPE_NUM)) {
                 addIn = new NumAddIn(datas);
-
+            }else if (dataType.equals(TYPE_ABC)){
+                addIn=new StringAddIn(datas);
             }
             addIns.add(addIn);
         } else {

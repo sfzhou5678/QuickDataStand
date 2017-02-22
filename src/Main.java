@@ -1,5 +1,6 @@
 import model.Column;
 import model.addin.NumAddIn;
+import model.addin.StringAddIn;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -17,9 +18,9 @@ public class Main {
 //            column.commandShow();
         }
         // 查看初始状态
-        Column curSelectedCol=newColumns.get(5);
+        Column curSelectedCol=newColumns.get(0);
         curSelectedCol.commandShowAddIn();
-        NumAddIn numAddIn= (NumAddIn) curSelectedCol.getAddIns().get(0);
+        StringAddIn numAddIn= (StringAddIn) curSelectedCol.getAddIns().get(0);
 
 //        System.out.println("=======选择构成前90%权重的数据tag=======");
 //        numAddIn.selectTopNPercentData(0.9);
@@ -43,7 +44,7 @@ public class Main {
 
         System.out.println("=======替换选中tag列的值=======");
         numAddIn.selectTagByIndex(indexs);
-        numAddIn.replaceValue(0.5);
+        numAddIn.replaceValue("abc");
         curSelectedCol.commandShowAddIn();
 
         // FIXME: 2017/2/22 这个应该不属于addin？
