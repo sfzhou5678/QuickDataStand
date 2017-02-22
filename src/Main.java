@@ -1,4 +1,5 @@
 import model.Column;
+import model.addin.NumAddIn;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -7,7 +8,7 @@ import java.util.List;
 public class Main {
 
     public static void main(String[] args) {
-        String filePath="C:\\Users\\zsf\\Downloads\\QDS DATA\\★★Airbnb New User Bookings\\test_users.csv";
+        String filePath="QDS DATA\\★★Airbnb New User Bookings\\test_users.csv";
         Column oriColumn=readFile(filePath);
 //        oriColumn.commandShow();
 
@@ -15,6 +16,11 @@ public class Main {
         for (Column column:newColumns){
 //            column.commandShow();
         }
+
+        newColumns.get(5).commandShowAddIn();
+        NumAddIn numAddIn= (NumAddIn) newColumns.get(5).getAddIns().get(0);
+        numAddIn.selectTopNPercentData(0.9);
+        newColumns.get(5).commandShowAddIn();
 
     }
 

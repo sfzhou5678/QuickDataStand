@@ -11,15 +11,23 @@ import java.util.*;
  * Created by zsf on 2017/2/21.
  */
 public class NumAddIn extends AddIn {
-    List<String> oriDatas = new ArrayList<String>();
-    List<Double> validDatas = new ArrayList<Double>();
     /**
-     * 如果有需要可以选择升序会降序排列，保留原始数据，将排序后的数据存储到sortedDatas中
+     * 原始输入的数据，用于恢复原状
      */
-    List<Map.Entry<Double,Integer>> sortedDatas;
+    List<Double> oriDatas = new ArrayList<Double>();
+
+    /**
+     * 当前保留下来的所有数据，但是包含空值和错误值
+     */
+    List<Double> curDatas = new ArrayList<Double>();
+
+    /**
+     * curDatas按次数排序后的结果，存储在sortedDatas中
+     */
+    List<Map.Entry<Double, Integer>> sortedDatas;
     private Counter<Double> counter;    // 和sortedDatas配套使用
 
-    private boolean sortReverse=false;
+    private boolean sortReverse = false;
 
     private double min = 0.0;
     private double max = 0.0;
@@ -31,58 +39,80 @@ public class NumAddIn extends AddIn {
     private double median = 0.0;
     private double standardDeviation = 0.0;
 
+    // TODO: 2017/2/22 数据类型还是应该封装到类中
+    public static final double errorValue = Double.NEGATIVE_INFINITY;
+    public static final double emptyValue = Double.NaN;
+
 
     public NumAddIn(List<String> oriDatas) {
-        this.oriDatas = oriDatas;
-        try {
-
-            for (String str : oriDatas) {
-                if (str.isEmpty() || !RegexTool.isNum(str)) {
-                    // TODO: 2017/2/21 空值处理，不仅仅是num，其他数据也有这种问题
-                    continue;
-                }
-                double num = Double.valueOf(str);
-
-                sum += num;
-                min = Math.min(min, num);
-                max = Math.max(max, num);
-                // TODO: 2017/2/21 中位数、标准差、四分卫等
-
-                validDatas.add(num);
-            }
-            validCount = validDatas.size();
-            ave = sum / validCount;
-//            calculateMedian();
-//            calculateSD();
-
-            updateCounter();
-        } catch (Exception e) {
-            // TODO: 2017/2/21 如果分类错误，可能无法将oridata转换成numData
-            e.printStackTrace();
-        }
+        getOriDatas(oriDatas);
+        updateDataInfo();
     }
 
     /**
-     * 更新counter和sortedDatas
+     * 在保证validDatas已经更新过的前提下，更新当前数据的状态
+     * */
+    private void updateDataInfo() {
+        sum = 0;
+        min = Double.POSITIVE_INFINITY;
+        max = Double.NEGATIVE_INFINITY;
+        for (Double data : curDatas) {
+            if (data.equals(errorValue) || data.equals(emptyValue)) {
+                // 跳过空值不作处理
+                continue;
+            }
+            sum += data;
+            min = Math.min(min, data);
+            max = Math.max(max, data);
+        }
+        ave = sum / validCount;
+//            calculateMedian();
+//            calculateSD();
+
+        updateSortedDatas();
+    }
+
+    /**
+     * 将原始数据转换为有效数据(主要针对str->num)，将非数字数据记作errorValue，空值记作emptyValue
      */
-    private void updateCounter() {
+    private void getOriDatas(List<String> strDatas) {
+        oriDatas=new ArrayList<Double>();
+        curDatas=new ArrayList<Double>();
+        for (String str : strDatas) {
+            if(str.isEmpty()){
+                oriDatas.add(emptyValue);
+            }else if(!RegexTool.isNum(str)){
+                oriDatas.add(errorValue);
+            }else {
+                double num = Double.valueOf(str);
+                oriDatas.add(num);
+            }
+        }
+        curDatas.addAll(oriDatas);
+        updateValidCount();
+    }
+
+    /**
+     * 更新sortedDatas
+     */
+    private void updateSortedDatas() {
         // FIXME: 2017/2/22 调用selectTopNPercentData之后还要更新validData，counter等，这块需要重新设计
-        counter=new Counter<Double>();
-        for (Double num:validDatas){
+        counter = new Counter<Double>();
+        for (Double num : curDatas) {
             counter.count(num);
         }
         // 默认词频统计
         // TODO: 2017/2/21 这一块应该移到basicBarAddIn中去
-        Map<Double,Integer> counterMap = counter.getAllKeysStatistics();
+        Map<Double, Integer> counterMap = counter.getAllKeysStatistics();
         // TODO: 2017/2/21 下面代码重构进BarItem
-        sortedDatas =new ArrayList<Map.Entry<Double,Integer>>(counterMap.entrySet());
+        sortedDatas = new ArrayList<Map.Entry<Double, Integer>>(counterMap.entrySet());
         Collections.sort(sortedDatas, new Comparator<Map.Entry<Double, Integer>>() {
             public int compare(Map.Entry<Double, Integer> o1,
                                Map.Entry<Double, Integer> o2) {
-                if (sortReverse){
+                if (sortReverse) {
                     // 从小到大
                     return (o1.getValue() - o2.getValue());
-                }else {
+                } else {
                     // 从大到小
                     return (o2.getValue() - o1.getValue());
                 }
@@ -92,53 +122,73 @@ public class NumAddIn extends AddIn {
 
     /**
      * 选出能构成前percent%权重的数据集
+     *
      * @param percent
      */
-    public void selectTopNPercentData(double percent){
-        List<Map.Entry<Double,Integer>> topPercentDatas=new ArrayList<Map.Entry<Double,Integer>>();
-        int curSum=0;
-        for (int i=0;i<sortedDatas.size();i++){
-            curSum+=sortedDatas.get(i).getValue();
-            topPercentDatas.add(sortedDatas.get(i));
-            if (curSum>=(int)percent*validCount){
+    public void selectTopNPercentData(double percent) {
+        List<Double> needKeepDatas = new ArrayList<Double>();
+        int curSum = 0;
+        for (int i = 0; i < sortedDatas.size(); i++) {
+            curSum += sortedDatas.get(i).getValue();
+            needKeepDatas.add(sortedDatas.get(i).getKey());
+            if (curSum >= (int) (percent * validCount)) {
                 break;
             }
         }
-        sortedDatas=topPercentDatas;
-        // FIXME: 2017/2/22 还要更新validData，counter等，这块需要重新设计
+        List<Double> newValidDatas = new ArrayList<Double>();
+        for (Double key : needKeepDatas) {
+            for (Double data : curDatas) {
+                if (key.equals(data)) {
+                    newValidDatas.add(data);
+                }
+            }
+        }
+        curDatas=newValidDatas;
+        updateValidCount();
+        updateDataInfo();
+    }
+
+    private void updateValidCount() {
+        validCount=0;
+        for (Double data:curDatas){
+            if (data.equals(errorValue) || data.equals(emptyValue)) {
+                continue;
+            }
+            validCount++;
+        }
     }
 
     /**
      * 在当前有效数据中筛选出大于某个值的
+     *
      * @param target
      */
-    public void selectDataLargerThan(double target){
+    public void selectDataLargerThan(double target) {
         // 暂时不做
     }
 
     /**
      * 在当前有效数据中删选出小于某个值的
+     *
      * @param target
      */
-    public void selectDataSmallerThan(double target){
+    public void selectDataSmallerThan(double target) {
         // 暂时不做
     }
-
-
 
     @Override
     public void commandShow() {
         showCounterMap();
 
         System.out.println(String.format("total:%d valid:%d max:%f min:%f sum:%f ave:%f median:%f sd:%f",
-                oriDatas.size(), validCount, min, max, sum, ave, median, standardDeviation));
+                curDatas.size(), validCount, min, max, sum, ave, median, standardDeviation));
     }
 
     /**
      * 绘制词频柱状图，默认从高到低排列
      */
     private void showCounterMap() {
-        for (int i=0;i<sortedDatas.size();i++){
+        for (int i = 0; i < sortedDatas.size(); i++) {
             // TODO: 2017/2/21 图形界面show
             System.out.println(sortedDatas.get(i));
         }

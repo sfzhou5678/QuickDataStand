@@ -83,7 +83,7 @@ public class Column {
                     if (i==5){
                         // FIXME: 2017/2/21 特例：第五列刚好是age
                         newColumn.generateAddInByType();
-                        newColumn.commandShowAddIn();
+//                        newColumn.commandShowAddIn();
                     }
                     newColumns.add(newColumn);
                 }
@@ -100,7 +100,7 @@ public class Column {
     /**
      * 在命令行中显示addIn
      */
-    private void commandShowAddIn() {
+    public void commandShowAddIn() {
        for (AddIn addin:addIns){
            addin.commandShow();
        }
