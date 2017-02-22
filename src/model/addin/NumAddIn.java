@@ -148,16 +148,12 @@ public class NumAddIn extends AddIn {
         updateDataInfo();
     }
 
-    private void updateValidCount() {
-        validCount=0;
-        for (Double data:curDatas){
-            if (data.equals(errorValue) || data.equals(emptyValue)) {
-                continue;
-            }
-            validCount++;
+    public void selectTagByIndex(List<Integer> indexs){
+        System.out.println("Select Index"+indexs+":");
+        for (Integer index:indexs){
+            System.out.println(sortedDatas.get(index));
         }
     }
-
     /**
      * 在当前有效数据中筛选出大于某个值的
      *
@@ -174,6 +170,16 @@ public class NumAddIn extends AddIn {
      */
     public void selectDataSmallerThan(double target) {
         // 暂时不做
+    }
+
+    private void updateValidCount() {
+        validCount=0;
+        for (Double data:curDatas){
+            if (data.equals(errorValue) || data.equals(emptyValue)) {
+                continue;
+            }
+            validCount++;
+        }
     }
 
     @Override

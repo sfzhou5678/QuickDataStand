@@ -16,12 +16,26 @@ public class Main {
         for (Column column:newColumns){
 //            column.commandShow();
         }
-
+        // 查看初始状态
         newColumns.get(5).commandShowAddIn();
+        // 在插件中选择构成前90%权重的数据
         NumAddIn numAddIn= (NumAddIn) newColumns.get(5).getAddIns().get(0);
         numAddIn.selectTopNPercentData(0.9);
         newColumns.get(5).commandShowAddIn();
 
+        // 选择某几列index
+        List<Integer> indexs=new ArrayList<Integer>();
+        indexs.add(1);
+        indexs.add(2);
+        numAddIn.selectTagByIndex(indexs);
+
+        // TODO 仅保留选中tag列
+
+        // TODO 删除选中tag列
+
+        // TODO 替换选中tag列的值
+
+        // TODO 还原大列数据
     }
 
     /**
