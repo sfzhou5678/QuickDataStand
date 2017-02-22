@@ -27,7 +27,7 @@ public class Column {
      */
     private String dataType = "";
 
-    List<AddIn> addIns = new ArrayList<AddIn>();
+    AddIn addIn;
     List<String> datas = new ArrayList<String>();
 
     /**
@@ -80,11 +80,11 @@ public class Column {
                         newColumn.setColHeader(newHeaders[i]);
                     }
                     newColumn.setDatas(splitedDataList.get(i));
-                    if (i==5){
+                    if (i == 5) {
                         // FIXME: 2017/2/21 特例：第五列刚好是age
                         newColumn.setDataType(analyzeDataType(splitedDataList.get(i)));
                         newColumn.generateAddInByType();
-                    }else {
+                    } else {
                         newColumn.setDataType(TYPE_ABC);
                         newColumn.generateAddInByType();
                     }
@@ -104,9 +104,7 @@ public class Column {
      * 在命令行中显示addIn
      */
     public void commandShowAddIn() {
-       for (AddIn addin:addIns){
-           addin.commandShow();
-       }
+        addIn.commandShow();
     }
 
     /**
@@ -114,13 +112,11 @@ public class Column {
      */
     private void generateAddInByType() {
         if (!dataType.isEmpty()) {
-            AddIn addIn = null;
             if (dataType.equals(TYPE_NUM)) {
                 addIn = new NumAddIn(datas);
-            }else if (dataType.equals(TYPE_ABC)){
-                addIn=new StringAddIn(datas);
+            } else if (dataType.equals(TYPE_ABC)) {
+                addIn = new StringAddIn(datas);
             }
-            addIns.add(addIn);
         } else {
             // TODO: 2017/2/21 未知type
         }
@@ -144,6 +140,74 @@ public class Column {
     public void setDataType(String dataType) {
         this.dataType = dataType;
     }
+    public boolean changeType(String dataType) {
+        // TODO: 2017/2/22 转换Addin类型
+        if (doChangeAddInType(dataType)) {
+            this.dataType = dataType;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * 将现有addIn的数据转换进新的Addin中去
+     *
+     * @return
+     */
+    private boolean doChangeAddInType(String targetType) {
+        try {
+            if (addIn instanceof NumAddIn) {
+                List<Double> oriDatas = ((NumAddIn) addIn).getOriDatas();
+                List<Double> curDatas = ((NumAddIn) addIn).getCurDatas();
+                List<Integer> selectedIndex = ((NumAddIn) addIn).getSelectedIndex();
+
+                if (targetType.equals(TYPE_ABC)) {
+                    // 先转换数据格式
+                    List<String> newOriDatas = new ArrayList<String>();
+                    List<String> newcurDatas = new ArrayList<String>();
+                    for (int i = 0; i < oriDatas.size(); i++) {
+                        newOriDatas.add(i, String.valueOf(oriDatas.get(i)));
+                    }
+                    for (int i = 0; i < curDatas.size(); i++) {
+                        newcurDatas.add(i, String.valueOf(curDatas.get(i)));
+                    }
+
+                    addIn = new StringAddIn();
+                    ((StringAddIn) addIn).setOriDatas(newOriDatas);
+                    ((StringAddIn) addIn).setCurDatas(newcurDatas);
+                    ((StringAddIn) addIn).setSelectedIndex(selectedIndex);
+                }
+            } else if (addIn instanceof StringAddIn) {
+                List<String> oriDatas = ((StringAddIn) addIn).getOriDatas();
+                List<String> curDatas = ((StringAddIn) addIn).getCurDatas();
+                List<Integer> selectedIndex = ((StringAddIn) addIn).getSelectedIndex();
+                if (targetType.equals(TYPE_NUM)) {
+                    if (targetType.equals(TYPE_NUM)) {
+                        // 先转换数据格式
+                        List<Double> newOriDatas = new ArrayList<Double>();
+                        List<Double> newcurDatas = new ArrayList<Double>();
+                        for (int i = 0; i < oriDatas.size(); i++) {
+                            newOriDatas.add(i, Double.valueOf(oriDatas.get(i)));
+                        }
+                        for (int i = 0; i < curDatas.size(); i++) {
+                            newcurDatas.add(i, Double.valueOf(curDatas.get(i)));
+                        }
+
+                        addIn = new NumAddIn();
+                        ((NumAddIn) addIn).setOriDatas(newOriDatas);
+                        ((NumAddIn) addIn).setCurDatas(newcurDatas);
+                        ((NumAddIn) addIn).setSelectedIndex(selectedIndex);
+                    }
+                }
+            }
+            addIn.updateDataInfo();
+            return true;
+        }catch (Exception e){
+//            e.printStackTrace();
+            return false;
+        }
+    }
 
     public boolean isHasColHeader() {
         return hasColHeader;
@@ -161,19 +225,19 @@ public class Column {
         this.colHeader = colHeader;
     }
 
-    public List<AddIn> getAddIns() {
-        return addIns;
-    }
-
-    public void setAddIns(List<AddIn> addIns) {
-        this.addIns = addIns;
-    }
-
     public List<String> getDatas() {
         return datas;
     }
 
     public void setDatas(List<String> datas) {
         this.datas = datas;
+    }
+
+    public AddIn getAddIn() {
+        return addIn;
+    }
+
+    public void setAddIn(AddIn addIn) {
+        this.addIn = addIn;
     }
 }

@@ -1,4 +1,5 @@
 import model.Column;
+import model.addin.AddIn;
 import model.addin.NumAddIn;
 import model.addin.StringAddIn;
 
@@ -18,41 +19,57 @@ public class Main {
 //            column.commandShow();
         }
         // 查看初始状态
+//        Column curSelectedCol=newColumns.get(5);
         Column curSelectedCol=newColumns.get(14);
         curSelectedCol.commandShowAddIn();
-        StringAddIn numAddIn= (StringAddIn) curSelectedCol.getAddIns().get(0);
+
+        // TODO: 2017/2/22 切换类型
+//        curSelectedCol.changeType(Column.TYPE_ABC);
+        AddIn addIn=curSelectedCol.getAddIn();
 
         System.out.println("=======选择构成前80%权重的数据tag=======");
-        numAddIn.selectTopNPercentData(0.8);
+        addIn.selectTopNPercentData(0.9);
         curSelectedCol.commandShowAddIn();
 
         // 选择某几列index
         List<Integer> indexs=new ArrayList<Integer>();
         indexs.add(0);
-        indexs.add(1);
+//        indexs.add(1);
 
         System.out.println("=======删除选中列的tag=======");
-        numAddIn.selectTagByIndex(indexs);
-        numAddIn.deleteCurSelectedIndex();
+        addIn.selectTagByIndex(indexs);
+        addIn.deleteCurSelectedIndex();
         curSelectedCol.commandShowAddIn();
 
+        if(curSelectedCol.changeType(Column.TYPE_NUM)){
+            System.out.println("转换类型成功");
+            addIn=curSelectedCol.getAddIn();
+        }else {
+            System.out.println("转换类型失败，请检查数据内容是否正确");
+        }
         System.out.println("=======仅保留选中列的tag=======");
-        numAddIn.selectTagByIndex(indexs);
-        numAddIn.keepOnlyCurSelectedIndex();
+        addIn.selectTagByIndex(indexs);
+        addIn.keepOnlyCurSelectedIndex();
         curSelectedCol.commandShowAddIn();
 
         System.out.println("=======替换选中tag列的值=======");
-        numAddIn.selectTagByIndex(indexs);
-        numAddIn.replaceValue("abc");
+        addIn.selectTagByIndex(indexs);
+        Object replaceValue=null;
+        if (curSelectedCol.getDataType().equals(Column.TYPE_NUM)){
+            replaceValue=new Double(0.5);
+        }else{
+            replaceValue=new String("Abc");
+        }
+        addIn.replaceValue(replaceValue);
         curSelectedCol.commandShowAddIn();
 
 //        // FIXME: 2017/2/22 这个应该不属于addin？
         System.out.println("=======还原原始数据=======");
-        numAddIn.resumeOriDatas();
+        addIn.resumeOriDatas();
         curSelectedCol.commandShowAddIn();
 
     }
-    
+
     /**
      * 从原始文件中读取数据，并展示成col形式
      * @param filePath
@@ -70,7 +87,7 @@ public class Main {
             String str = "";
             while ((str = bufferedReader.readLine()) != null) {
                 datas.add(str);
-                if (count++>100){
+                if (count++>=100){
                     break;
                 }
             }

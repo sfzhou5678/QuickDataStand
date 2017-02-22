@@ -10,7 +10,7 @@ import java.util.*;
  * 可以用于展示平均数、最大最小值、中位数、标准差、四分位数等
  * Created by zsf on 2017/2/21.
  */
-public class NumAddIn extends AddIn {
+public class NumAddIn implements AddIn {
     /**
      * 原始输入的数据，用于恢复原状
      */
@@ -46,6 +46,9 @@ public class NumAddIn extends AddIn {
     public static final double emptyValue = Double.NaN;
 
 
+    public NumAddIn() {
+    }
+
     public NumAddIn(List<String> oriDatas) {
         getOriDatas(oriDatas);
         updateDataInfo();
@@ -54,7 +57,8 @@ public class NumAddIn extends AddIn {
     /**
      * 在保证validDatas已经更新过的前提下，更新当前数据的状态
      * */
-    private void updateDataInfo() {
+    @Override
+    public void updateDataInfo() {
         updateValidCount();
         sum = 0;
         min = Double.POSITIVE_INFINITY;
@@ -98,7 +102,8 @@ public class NumAddIn extends AddIn {
     /**
      * 更新sortedDatas
      */
-    private void updateSortedDatas() {
+    @Override
+    public void updateSortedDatas() {
         // FIXME: 2017/2/22 调用selectTopNPercentData之后还要更新validData，counter等，这块需要重新设计
         counter = new Counter<Double>();
         for (Double num : curDatas) {
@@ -128,6 +133,7 @@ public class NumAddIn extends AddIn {
      *
      * @param percent
      */
+    @Override
     public void selectTopNPercentData(double percent) {
         List<Double> needKeepDatas = new ArrayList<Double>();
         int curSum = 0;
@@ -154,6 +160,7 @@ public class NumAddIn extends AddIn {
      * 鼠标选中某级列tag，然后显示这几列的详情
      * @param indexs
      */
+    @Override
     public void selectTagByIndex(List<Integer> indexs){
         this.selectedIndex=indexs;
         System.out.println("Select Index"+indexs+":");
@@ -165,6 +172,7 @@ public class NumAddIn extends AddIn {
     /**
      * 在curDatas中仅保留选中的这几列
      */
+    @Override
     public void keepOnlyCurSelectedIndex(){
         List<Double> newCurDatas=new ArrayList<Double>();
         for (Integer index:selectedIndex){
@@ -183,6 +191,7 @@ public class NumAddIn extends AddIn {
     /**
      * 在curDatas中删除选中的这几列
      */
+    @Override
     public void deleteCurSelectedIndex(){
         List<Double> newCurDatas=new ArrayList<Double>();
         for (Double data:curDatas){
@@ -204,9 +213,10 @@ public class NumAddIn extends AddIn {
 
     /**
      * 替换当前选中tag列的值
-     * @param value
      */
-    public void replaceValue(Double value){
+    @Override
+    public void replaceValue(Object o){
+        Double value=(Double)o;
         for (Integer index:selectedIndex){
             Double key=sortedDatas.get(index).getKey();
             for (int i=0;i<curDatas.size();i++){
@@ -222,6 +232,7 @@ public class NumAddIn extends AddIn {
      * 恢复原始数据
      * 注:原始数据可以通过保存而被覆盖
      */
+    @Override
     public void resumeOriDatas(){
         curDatas=oriDatas;
         updateDataInfo();
@@ -231,7 +242,8 @@ public class NumAddIn extends AddIn {
     /**
      * 每次操作之后，清空选中的tag列
      */
-    private void clearSelectedIndex() {
+    @Override
+    public void clearSelectedIndex() {
         selectedIndex=new ArrayList<Integer>();
     }
     /**
@@ -252,7 +264,8 @@ public class NumAddIn extends AddIn {
         // 暂时不做
     }
 
-    private void updateValidCount() {
+    @Override
+    public void updateValidCount() {
         validCount=0;
         for (Double data:curDatas){
             if (data.equals(errorValue) || data.equals(emptyValue)) {
@@ -278,5 +291,45 @@ public class NumAddIn extends AddIn {
             // TODO: 2017/2/21 图形界面show
             System.out.println(sortedDatas.get(i));
         }
+    }
+
+    public List<Double> getOriDatas() {
+        return oriDatas;
+    }
+
+    public void setOriDatas(List<Double> oriDatas) {
+        this.oriDatas = oriDatas;
+    }
+
+    public List<Double> getCurDatas() {
+        return curDatas;
+    }
+
+    public void setCurDatas(List<Double> curDatas) {
+        this.curDatas = curDatas;
+    }
+
+    public List<Map.Entry<Double, Integer>> getSortedDatas() {
+        return sortedDatas;
+    }
+
+    public void setSortedDatas(List<Map.Entry<Double, Integer>> sortedDatas) {
+        this.sortedDatas = sortedDatas;
+    }
+
+    public int getValidCount() {
+        return validCount;
+    }
+
+    public void setValidCount(int validCount) {
+        this.validCount = validCount;
+    }
+
+    public List<Integer> getSelectedIndex() {
+        return selectedIndex;
+    }
+
+    public void setSelectedIndex(List<Integer> selectedIndex) {
+        this.selectedIndex = selectedIndex;
     }
 }

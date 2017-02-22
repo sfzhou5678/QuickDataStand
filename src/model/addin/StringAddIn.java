@@ -8,7 +8,7 @@ import java.util.*;
 /**
  * Created by zsf on 2017/2/22.
  */
-public class StringAddIn extends AddIn {
+public class StringAddIn implements AddIn {
     /**
      * 原始输入的数据，用于恢复原状
      */
@@ -36,6 +36,9 @@ public class StringAddIn extends AddIn {
     public static final double emptyValue = Double.NaN;
 
 
+    public StringAddIn() {
+    }
+
     public StringAddIn(List<String> oriDatas) {
         this.oriDatas=oriDatas;
         curDatas=new ArrayList<String>();
@@ -46,7 +49,8 @@ public class StringAddIn extends AddIn {
     /**
      * 在保证validDatas已经更新过的前提下，更新当前数据的状态
      * */
-    private void updateDataInfo() {
+    @Override
+    public void updateDataInfo() {
         updateValidCount();
         for (String data : curDatas) {
             // TODO: 2017/2/22 类型判断
@@ -61,7 +65,8 @@ public class StringAddIn extends AddIn {
     /**
      * 更新sortedDatas
      */
-    private void updateSortedDatas() {
+    @Override
+    public void updateSortedDatas() {
         // FIXME: 2017/2/22 调用selectTopNPercentData之后还要更新validData，counter等，这块需要重新设计
         counter = new Counter<String >();
         for (String data : curDatas) {
@@ -91,6 +96,7 @@ public class StringAddIn extends AddIn {
      *
      * @param percent
      */
+    @Override
     public void selectTopNPercentData(double percent) {
         List<String> needKeepDatas = new ArrayList<String>();
         int curSum = 0;
@@ -117,6 +123,7 @@ public class StringAddIn extends AddIn {
      * 鼠标选中某级列tag，然后显示这几列的详情
      * @param indexs
      */
+    @Override
     public void selectTagByIndex(List<Integer> indexs){
         this.selectedIndex=indexs;
         System.out.println("Select Index"+indexs+":");
@@ -128,6 +135,7 @@ public class StringAddIn extends AddIn {
     /**
      * 在curDatas中仅保留选中的这几列
      */
+    @Override
     public void keepOnlyCurSelectedIndex(){
         List<String> newCurDatas=new ArrayList<String>();
         for (Integer index:selectedIndex){
@@ -146,6 +154,7 @@ public class StringAddIn extends AddIn {
     /**
      * 在curDatas中删除选中的这几列
      */
+    @Override
     public void deleteCurSelectedIndex(){
         List<String> newCurDatas=new ArrayList<String>();
         for (String data:curDatas){
@@ -167,9 +176,9 @@ public class StringAddIn extends AddIn {
 
     /**
      * 替换当前选中tag列的值
-     * @param value
      */
-    public void replaceValue(String value){
+    public void replaceValue(Object o){
+        String value=(String)o;
         for (Integer index:selectedIndex){
             String key=sortedDatas.get(index).getKey();
             for (int i=0;i<curDatas.size();i++){
@@ -185,6 +194,7 @@ public class StringAddIn extends AddIn {
      * 恢复原始数据
      * 注:原始数据可以通过保存而被覆盖
      */
+    @Override
     public void resumeOriDatas(){
         curDatas=oriDatas;
         updateDataInfo();
@@ -194,28 +204,13 @@ public class StringAddIn extends AddIn {
     /**
      * 每次操作之后，清空选中的tag列
      */
-    private void clearSelectedIndex() {
+    @Override
+    public void clearSelectedIndex() {
         selectedIndex=new ArrayList<Integer>();
     }
-    /**
-     * 在当前有效数据中筛选出大于某个值的
-     *
-     * @param target
-     */
-    public void selectDataLargerThan(double target) {
-        // 暂时不做
-    }
 
-    /**
-     * 在当前有效数据中删选出小于某个值的
-     *
-     * @param target
-     */
-    public void selectDataSmallerThan(double target) {
-        // 暂时不做
-    }
-
-    private void updateValidCount() {
+    @Override
+    public void updateValidCount() {
         validCount=0;
         for (String data:curDatas){
             if (false) {
@@ -243,5 +238,37 @@ public class StringAddIn extends AddIn {
             // TODO: 2017/2/21 图形界面show
             System.out.println(sortedDatas.get(i));
         }
+    }
+
+    public List<String> getOriDatas() {
+        return oriDatas;
+    }
+
+    public void setOriDatas(List<String> oriDatas) {
+        this.oriDatas = oriDatas;
+    }
+
+    public List<String> getCurDatas() {
+        return curDatas;
+    }
+
+    public void setCurDatas(List<String> curDatas) {
+        this.curDatas = curDatas;
+    }
+
+    public List<Map.Entry<String, Integer>> getSortedDatas() {
+        return sortedDatas;
+    }
+
+    public void setSortedDatas(List<Map.Entry<String, Integer>> sortedDatas) {
+        this.sortedDatas = sortedDatas;
+    }
+
+    public List<Integer> getSelectedIndex() {
+        return selectedIndex;
+    }
+
+    public void setSelectedIndex(List<Integer> selectedIndex) {
+        this.selectedIndex = selectedIndex;
     }
 }
