@@ -43,6 +43,7 @@ public class NumAddIn extends AddIn {
     public static final double errorValue = Double.NEGATIVE_INFINITY;
     public static final double emptyValue = Double.NaN;
 
+    List<Integer> selectedIndex;
 
     public NumAddIn(List<String> oriDatas) {
         getOriDatas(oriDatas);
@@ -53,6 +54,7 @@ public class NumAddIn extends AddIn {
      * 在保证validDatas已经更新过的前提下，更新当前数据的状态
      * */
     private void updateDataInfo() {
+        updateValidCount();
         sum = 0;
         min = Double.POSITIVE_INFINITY;
         max = Double.NEGATIVE_INFINITY;
@@ -89,7 +91,6 @@ public class NumAddIn extends AddIn {
             }
         }
         curDatas.addAll(oriDatas);
-        updateValidCount();
     }
 
     /**
@@ -144,15 +145,92 @@ public class NumAddIn extends AddIn {
             }
         }
         curDatas=newValidDatas;
-        updateValidCount();
         updateDataInfo();
     }
 
+    /**
+     * 鼠标选中某级列tag，然后显示这几列的详情
+     * @param indexs
+     */
     public void selectTagByIndex(List<Integer> indexs){
+        this.selectedIndex=indexs;
         System.out.println("Select Index"+indexs+":");
-        for (Integer index:indexs){
-            System.out.println(sortedDatas.get(index));
+//        for (Integer index:indexs){
+//            System.out.println(sortedDatas.get(index));
+//        }
+    }
+
+    /**
+     * 在curDatas中仅保留选中的这几列
+     */
+    public void keepOnlyCurSelectedIndex(){
+        List<Double> newCurDatas=new ArrayList<Double>();
+        for (Integer index:selectedIndex){
+            Double key=sortedDatas.get(index).getKey();
+            for (Double data:curDatas){
+                if (data.equals(key)){
+                    newCurDatas.add(data);
+                }
+            }
         }
+        curDatas=newCurDatas;
+        updateDataInfo();
+        clearSelectedIndex();
+    }
+
+    /**
+     * 在curDatas中删除选中的这几列
+     */
+    public void deleteCurSelectedIndex(){
+        List<Double> newCurDatas=new ArrayList<Double>();
+        for (Double data:curDatas){
+            boolean needDelete=false;
+            for (Integer index:selectedIndex){
+                Double key=sortedDatas.get(index).getKey();
+                if (data.equals(key)){
+                    needDelete=true;
+                }
+            }
+            if (!needDelete){
+                newCurDatas.add(data);
+            }
+        }
+        curDatas=newCurDatas;
+        updateDataInfo();
+        clearSelectedIndex();
+    }
+
+    /**
+     * 替换当前选中tag列的值
+     * @param value
+     */
+    public void replaceValue(Double value){
+        for (Integer index:selectedIndex){
+            Double key=sortedDatas.get(index).getKey();
+            for (int i=0;i<curDatas.size();i++){
+                if (curDatas.get(i).equals(key)){
+                    curDatas.set(i,value);
+                }
+            }
+        }
+        updateDataInfo();
+    }
+
+    /**
+     * 恢复原始数据
+     * 注:原始数据可以通过保存而被覆盖
+     */
+    public void resumeOriDatas(){
+        curDatas=oriDatas;
+        updateDataInfo();
+        clearSelectedIndex();
+    }
+
+    /**
+     * 每次操作之后，清空选中的tag列
+     */
+    private void clearSelectedIndex() {
+        selectedIndex=new ArrayList<Integer>();
     }
     /**
      * 在当前有效数据中筛选出大于某个值的

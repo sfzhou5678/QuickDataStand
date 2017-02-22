@@ -17,25 +17,40 @@ public class Main {
 //            column.commandShow();
         }
         // 查看初始状态
-        newColumns.get(5).commandShowAddIn();
-        // 在插件中选择构成前90%权重的数据
-        NumAddIn numAddIn= (NumAddIn) newColumns.get(5).getAddIns().get(0);
-        numAddIn.selectTopNPercentData(0.9);
-        newColumns.get(5).commandShowAddIn();
+        Column curSelectedCol=newColumns.get(5);
+        curSelectedCol.commandShowAddIn();
+        NumAddIn numAddIn= (NumAddIn) curSelectedCol.getAddIns().get(0);
+
+//        System.out.println("=======选择构成前90%权重的数据tag=======");
+//        numAddIn.selectTopNPercentData(0.9);
+//        curSelectedCol.commandShowAddIn();
 
         // 选择某几列index
         List<Integer> indexs=new ArrayList<Integer>();
+        indexs.add(0);
         indexs.add(1);
-        indexs.add(2);
+
+        System.out.println("=======删除选中列的tag=======");
         numAddIn.selectTagByIndex(indexs);
+        numAddIn.deleteCurSelectedIndex();
+        curSelectedCol.commandShowAddIn();
 
-        // TODO 仅保留选中tag列
+        System.out.println("=======仅保留选中列的tag=======");
+        numAddIn.selectTagByIndex(indexs);
+        numAddIn.keepOnlyCurSelectedIndex();
+        curSelectedCol.commandShowAddIn();
 
-        // TODO 删除选中tag列
 
-        // TODO 替换选中tag列的值
+        System.out.println("=======替换选中tag列的值=======");
+        numAddIn.selectTagByIndex(indexs);
+        numAddIn.replaceValue(0.5);
+        curSelectedCol.commandShowAddIn();
 
-        // TODO 还原大列数据
+        // FIXME: 2017/2/22 这个应该不属于addin？
+        System.out.println("=======还原原始数据=======");
+        numAddIn.resumeOriDatas();
+        curSelectedCol.commandShowAddIn();
+
     }
 
     /**
