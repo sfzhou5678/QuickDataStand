@@ -18,13 +18,13 @@ public class Main {
 //            column.commandShow();
         }
         // 查看初始状态
-        Column curSelectedCol=newColumns.get(0);
+        Column curSelectedCol=newColumns.get(14);
         curSelectedCol.commandShowAddIn();
         StringAddIn numAddIn= (StringAddIn) curSelectedCol.getAddIns().get(0);
 
-//        System.out.println("=======选择构成前90%权重的数据tag=======");
-//        numAddIn.selectTopNPercentData(0.9);
-//        curSelectedCol.commandShowAddIn();
+        System.out.println("=======选择构成前80%权重的数据tag=======");
+        numAddIn.selectTopNPercentData(0.8);
+        curSelectedCol.commandShowAddIn();
 
         // 选择某几列index
         List<Integer> indexs=new ArrayList<Integer>();
@@ -41,19 +41,18 @@ public class Main {
         numAddIn.keepOnlyCurSelectedIndex();
         curSelectedCol.commandShowAddIn();
 
-
         System.out.println("=======替换选中tag列的值=======");
         numAddIn.selectTagByIndex(indexs);
         numAddIn.replaceValue("abc");
         curSelectedCol.commandShowAddIn();
 
-        // FIXME: 2017/2/22 这个应该不属于addin？
+//        // FIXME: 2017/2/22 这个应该不属于addin？
         System.out.println("=======还原原始数据=======");
         numAddIn.resumeOriDatas();
         curSelectedCol.commandShowAddIn();
 
     }
-
+    
     /**
      * 从原始文件中读取数据，并展示成col形式
      * @param filePath
@@ -61,14 +60,14 @@ public class Main {
     private static Column readFile(String filePath) {
 
         Column column=null;
-        BufferedReader bufferedReader = null; //用于包装InputStreamReader,提高处理性能。因为BufferedReader有缓冲的，而InputStreamReader没有。
+        BufferedReader bufferedReader = null;
         try {
             bufferedReader=new BufferedReader(new InputStreamReader(new FileInputStream(filePath)));
 
             column=new Column();
             List<String> datas=new ArrayList<String>();
-            String str = "";
             int count=0;
+            String str = "";
             while ((str = bufferedReader.readLine()) != null) {
                 datas.add(str);
                 if (count++>100){

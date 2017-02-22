@@ -38,6 +38,8 @@ public class StringAddIn extends AddIn {
 
     public StringAddIn(List<String> oriDatas) {
         this.oriDatas=oriDatas;
+        curDatas=new ArrayList<String>();
+        curDatas.addAll(oriDatas);
         updateDataInfo();
     }
 
@@ -227,6 +229,8 @@ public class StringAddIn extends AddIn {
     public void commandShow() {
         showCounterMap();
 
+        System.out.println(String.format("total:%d valid:%d",
+                curDatas.size(), validCount));
 //        System.out.println(String.format("total:%d valid:%d max:%f min:%f sum:%f ave:%f median:%f sd:%f",
 //                curDatas.size(), validCount, min, max, sum, ave, median, standardDeviation));
     }
