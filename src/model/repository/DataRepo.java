@@ -40,4 +40,12 @@ public abstract class DataRepo {
     public void setValidCount(int validCount) {
         this.validCount = validCount;
     }
+
+    public abstract void deleteRowsByIndex(List<Integer> curSelectedRowIndexs);
+
+    public abstract void keepRowsByIndex(List<Integer> curSelectedRowIndexs);
+
+    public abstract void changeRowsByIndex(List<Integer> curSelectedRowIndexs, Object replaceRowValue);
+
+    public abstract List<Object> getCurDatas();
 }

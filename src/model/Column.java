@@ -3,9 +3,9 @@ package model;
 import model.addin.AddIn;
 import model.addin.NumAddIn;
 import model.addin.StringAddIn;
+import model.addin.AddInObserver;
 import model.repository.DataRepo;
 import model.repository.NumRepo;
-import model.repository.StringRepo;
 import tools.RegexTool;
 
 import java.util.ArrayList;
@@ -15,7 +15,7 @@ import java.util.List;
  * 每一列数据
  * Created by zsf on 2017/2/21.
  */
-public class Column {
+public class Column implements AddInObserver {
     public static final String TYPE_ABC = "TYPE_ABC";
     public static final String TYPE_NUM = "TYPE_NUM";
     public static final String TYPE_DATE = "TYPE_DATE";
@@ -43,7 +43,7 @@ public class Column {
         if (hasColHeader) {
             System.out.println(colHeader);
         }
-        for (String data : datas) {
+        for (Object data : dataRepo.getCurDatas()) {
             System.out.println(data);
         }
         // TODO: 2017/2/21 1. show各行数据
@@ -120,10 +120,10 @@ public class Column {
         if (!dataType.isEmpty()) {
             if (dataType.equals(TYPE_NUM)) {
                 dataRepo=new NumRepo(datas);
-                addIn = new NumAddIn(dataRepo);
+                addIn = new NumAddIn(dataRepo,this);
             } else if (dataType.equals(TYPE_ABC)) {
 //                dataRepo=new StringRepo(datas);
-                addIn = new StringAddIn(datas);
+                addIn = new StringAddIn(datas,this);
             }
         } else {
             // TODO: 2017/2/21 未知type
@@ -238,5 +238,42 @@ public class Column {
 
     public void setAddIn(AddIn addIn) {
         this.addIn = addIn;
+    }
+
+    /**
+     * 重新展示DataRepo中的数据
+     * addIn执行选择、保留、删除某几列tag之后会调用watcher的update更新数据
+     */
+    @Override
+    public void update() {
+        System.out.println("column update");
+    }
+
+    List<Integer> curSelectedRowIndexs=new ArrayList<Integer>();
+    public void selectRowByIndex(List<Integer> rowIndexs) {
+        this.curSelectedRowIndexs=rowIndexs;
+    }
+
+    /**
+     * todo 调用PBE系统，可以单独处理某一列难以自动分割的数据，可以选择转换成一列或多列
+     * 比如Tue Apr 03 18:35:31 +0800 2012 可以拆分成Tue，Apr 03， 18:35:31，+0800，2012多列
+     */
+    public void callPBESystem() {
+        // TODO: 2017/2/23 结合PBE
+    }
+
+    public void deleteRowsByIndex() {
+        dataRepo.deleteRowsByIndex(curSelectedRowIndexs);
+        addIn.updateUI();
+    }
+
+    public void keepRowsByIndex() {
+        dataRepo.keepRowsByIndex(curSelectedRowIndexs);
+        addIn.updateUI();
+    }
+
+    public void changeRowsByIndex(Object replaceRowValue) {
+        dataRepo.changeRowsByIndex(curSelectedRowIndexs,replaceRowValue);
+        addIn.updateUI();
     }
 }

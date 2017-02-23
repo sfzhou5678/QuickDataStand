@@ -10,7 +10,7 @@ import java.util.*;
  * 可以用于展示平均数、最大最小值、中位数、标准差、四分位数等
  * Created by zsf on 2017/2/21.
  */
-public class NumAddIn implements AddIn {
+public class NumAddIn extends AddIn implements UnderObservation {
     List<Integer> selectedIndex;
 
     private double min = 0.0;
@@ -30,16 +30,18 @@ public class NumAddIn implements AddIn {
     public NumAddIn() {
     }
 
-    public NumAddIn(DataRepo numRepo) {
+    public NumAddIn(DataRepo numRepo,AddInObserver addInObserver) {
         this.numRepo = (NumRepo) numRepo;
-        updateUI();
+        this.addWatcher(addInObserver);
+//        updateUI();
     }
 
     /**
      * NOTE:计划是在这里更新界面,可能在这里用不到这个函数
      */
-    private void updateUI() {
-        System.out.println("updateUI");
+    @Override
+    public void updateUI() {
+        System.out.println("更新addIn的UI");
     }
 
     /**
@@ -50,6 +52,7 @@ public class NumAddIn implements AddIn {
     public void selectTopNPercentData(double percent) {
         numRepo.selectTopNPercentData(percent);
         updateUI();
+        notifyWatchers();
     }
 
     /**
@@ -68,6 +71,7 @@ public class NumAddIn implements AddIn {
     public void keepOnlyCurSelectedIndex(){
         numRepo.keepOnlyCurSelectedIndex(selectedIndex);
         updateUI();
+        notifyWatchers();
         clearSelectedIndex();
     }
 
@@ -78,6 +82,7 @@ public class NumAddIn implements AddIn {
     public void deleteCurSelectedIndex(){
         numRepo.deleteCurSelectedIndex(selectedIndex);
         updateUI();
+        notifyWatchers();
         clearSelectedIndex();
     }
 
@@ -88,6 +93,7 @@ public class NumAddIn implements AddIn {
     public void replaceValue(Object o){
         numRepo.replaceValue(o,selectedIndex);
         updateUI();
+        notifyWatchers();
     }
 
     /**
@@ -98,6 +104,7 @@ public class NumAddIn implements AddIn {
     public void resumeOriDatas(){
         numRepo.resumeOriDatas();
         updateUI();
+        notifyWatchers();
         clearSelectedIndex();
     }
     /**

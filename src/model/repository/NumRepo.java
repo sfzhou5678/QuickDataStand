@@ -14,18 +14,18 @@ public class NumRepo extends DataRepo {
     /**
      * 原始输入的数据，用于恢复原状
      */
-    List<Double> oriDatas = new ArrayList<Double>();
+    List<Object> oriDatas = new ArrayList<Object>();
 
     /**
      * 当前保留下来的所有数据，但是包含空值和错误值
      */
-    List<Double> curDatas = new ArrayList<Double>();
+    List<Object> curDatas = new ArrayList<Object>();
 
     /**
      * curDatas按次数排序后的结果，存储在sortedDatas中
      */
-    List<Map.Entry<Double, Integer>> sortedDatas;
-    private Counter<Double> counter;    // 和sortedDatas配套使用
+    List<Map.Entry<Object, Integer>> sortedDatas;
+    private Counter<Object> counter;    // 和sortedDatas配套使用
 
     private double min = 0.0;
     private double max = 0.0;
@@ -43,8 +43,8 @@ public class NumRepo extends DataRepo {
      * 将原始数据转换为有效数据(主要针对str->num)，将非数字数据记作errorValue，空值记作emptyValue
      */
     private void getOriDatas(List<String> strDatas) {
-        oriDatas=new ArrayList<Double>();
-        curDatas=new ArrayList<Double>();
+        oriDatas=new ArrayList<Object>();
+        curDatas=new ArrayList<Object>();
         for (String str : strDatas) {
             if(str.isEmpty()){
                 oriDatas.add(NumAddIn.emptyValue);
@@ -65,7 +65,7 @@ public class NumRepo extends DataRepo {
      * @param percent
      */
     public void selectTopNPercentData(double percent) {
-        List<Double> needKeepDatas = new ArrayList<Double>();
+        List<Object> needKeepDatas = new ArrayList<Object>();
         int curSum = 0;
         for (int i = 0; i < sortedDatas.size(); i++) {
             curSum += sortedDatas.get(i).getValue();
@@ -74,9 +74,9 @@ public class NumRepo extends DataRepo {
                 break;
             }
         }
-        List<Double> newValidDatas = new ArrayList<Double>();
-        for (Double key : needKeepDatas) {
-            for (Double data : curDatas) {
+        List<Object> newValidDatas = new ArrayList<Object>();
+        for (Object key : needKeepDatas) {
+            for (Object data : curDatas) {
                 if (key.equals(data)) {
                     newValidDatas.add(data);
                 }
@@ -90,10 +90,10 @@ public class NumRepo extends DataRepo {
      * 在curDatas中仅保留选中的这几列
      */
     public void keepOnlyCurSelectedIndex(List<Integer> selectedIndex) {
-        List<Double> newCurDatas=new ArrayList<Double>();
+        List<Object> newCurDatas=new ArrayList<Object>();
         for (Integer index:selectedIndex){
-            Double key=sortedDatas.get(index).getKey();
-            for (Double data:curDatas){
+            Object key=sortedDatas.get(index).getKey();
+            for (Object data:curDatas){
                 if (data.equals(key)){
                     newCurDatas.add(data);
                 }
@@ -107,11 +107,11 @@ public class NumRepo extends DataRepo {
      * 在curDatas中删除选中的这几列
      */
     public void deleteCurSelectedIndex(List<Integer> selectedIndex) {
-        List<Double> newCurDatas=new ArrayList<Double>();
-        for (Double data:curDatas){
+        List<Object> newCurDatas=new ArrayList<Object>();
+        for (Object data:curDatas){
             boolean needDelete=false;
             for (Integer index:selectedIndex){
-                Double key=sortedDatas.get(index).getKey();
+                Object key=sortedDatas.get(index).getKey();
                 if (data.equals(key)){
                     needDelete=true;
                 }
@@ -130,7 +130,7 @@ public class NumRepo extends DataRepo {
     public void replaceValue(Object o, List<Integer> selectedIndex) {
         Double value=(Double)o;
         for (Integer index:selectedIndex){
-            Double key=sortedDatas.get(index).getKey();
+            Object key=sortedDatas.get(index).getKey();
             for (int i=0;i<curDatas.size();i++){
                 if (curDatas.get(i).equals(key)){
                     curDatas.set(i,value);
@@ -148,14 +148,14 @@ public class NumRepo extends DataRepo {
         sum = 0;
         min = Double.POSITIVE_INFINITY;
         max = Double.NEGATIVE_INFINITY;
-        for (Double data : curDatas) {
+        for (Object data : curDatas) {
             if (data.equals(NumAddIn.errorValue) || data.equals(NumAddIn.emptyValue)) {
                 // 跳过空值不作处理
                 continue;
             }
-            sum += data;
-            min = Math.min(min, data);
-            max = Math.max(max, data);
+            sum += (Double)data;
+            min = Math.min(min, (Double)data);
+            max = Math.max(max, (Double)data);
         }
         ave = sum / validCount;
 //            calculateMedian();
@@ -172,7 +172,7 @@ public class NumRepo extends DataRepo {
     @Override
     public void updateValidCount() {
         validCount=0;
-        for (Double data:curDatas){
+        for (Object data:curDatas){
             if (data.equals(NumAddIn.errorValue) || data.equals(NumAddIn.emptyValue)) {
                 // 跳过空值不作处理
                 continue;
@@ -186,18 +186,18 @@ public class NumRepo extends DataRepo {
      */
     @Override
     public void updateSortedDatas() {
-        counter = new Counter<Double>();
-        for (Double num : curDatas) {
+        counter = new Counter<Object>();
+        for (Object num : curDatas) {
             counter.count(num);
         }
         // 默认词频统计
         // TODO: 2017/2/21 这一块应该移到basicBarAddIn中去
-        Map<Double, Integer> counterMap = counter.getAllKeysStatistics();
+        Map<Object, Integer> counterMap = counter.getAllKeysStatistics();
         // TODO: 2017/2/21 下面代码重构进BarItem
-        sortedDatas = new ArrayList<Map.Entry<Double, Integer>>(counterMap.entrySet());
-        Collections.sort(sortedDatas, new Comparator<Map.Entry<Double, Integer>>() {
-            public int compare(Map.Entry<Double, Integer> o1,
-                               Map.Entry<Double, Integer> o2) {
+        sortedDatas = new ArrayList<Map.Entry<Object, Integer>>(counterMap.entrySet());
+        Collections.sort(sortedDatas, new Comparator<Map.Entry<Object, Integer>>() {
+            public int compare(Map.Entry<Object, Integer> o1,
+                               Map.Entry<Object, Integer> o2) {
                 if (sortReverse) {
                     // 从小到大
                     return (o1.getValue() - o2.getValue());
@@ -214,27 +214,55 @@ public class NumRepo extends DataRepo {
         updateDataInfo();
     }
 
-    public List<Double> getOriDatas() {
+    @Override
+    public void deleteRowsByIndex(List<Integer> curSelectedRowIndexs) {
+        for (int i=curSelectedRowIndexs.size()-1;i>=0;i--){
+            curDatas.remove((int)curSelectedRowIndexs.get(i));
+        }
+        updateDataInfo();
+    }
+
+    @Override
+    public void keepRowsByIndex(List<Integer> curSelectedRowIndexs) {
+        List<Object> keptDatas=new ArrayList<Object>();
+        for (int index:curSelectedRowIndexs){
+            keptDatas.add(curDatas.get(index));
+        }
+        curDatas=keptDatas;
+        updateDataInfo();
+    }
+
+    @Override
+    public void changeRowsByIndex(List<Integer> curSelectedRowIndexs, Object replaceRowValue) {
+        for (int index:curSelectedRowIndexs){
+            curDatas.set(index,replaceRowValue);
+        }
+        updateDataInfo();
+    }
+
+
+
+    public List<Object> getOriDatas() {
         return oriDatas;
     }
 
-    public void setOriDatas(List<Double> oriDatas) {
+    public void setOriDatas(List<Object> oriDatas) {
         this.oriDatas = oriDatas;
     }
 
-    public List<Double> getCurDatas() {
+    public List<Object> getCurDatas() {
         return curDatas;
     }
 
-    public void setCurDatas(List<Double> curDatas) {
+    public void setCurDatas(List<Object> curDatas) {
         this.curDatas = curDatas;
     }
 
-    public List<Map.Entry<Double, Integer>> getSortedDatas() {
+    public List<Map.Entry<Object, Integer>> getSortedDatas() {
         return sortedDatas;
     }
 
-    public void setSortedDatas(List<Map.Entry<Double, Integer>> sortedDatas) {
+    public void setSortedDatas(List<Map.Entry<Object, Integer>> sortedDatas) {
         this.sortedDatas = sortedDatas;
     }
 

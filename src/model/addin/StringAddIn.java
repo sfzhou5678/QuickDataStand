@@ -1,14 +1,13 @@
 package model.addin;
 
 import tools.Counter;
-import tools.RegexTool;
 
 import java.util.*;
 
 /**
  * Created by zsf on 2017/2/22.
  */
-public class StringAddIn implements AddIn {
+public class StringAddIn extends AddIn {
     /**
      * 原始输入的数据，用于恢复原状
      */
@@ -39,10 +38,11 @@ public class StringAddIn implements AddIn {
     public StringAddIn() {
     }
 
-    public StringAddIn(List<String> oriDatas) {
+    public StringAddIn(List<String> oriDatas,AddInObserver addInObserver) {
         this.oriDatas=oriDatas;
         curDatas=new ArrayList<String>();
         curDatas.addAll(oriDatas);
+        this.addWatcher(addInObserver);
         updateDataInfo();
     }
 
@@ -199,6 +199,11 @@ public class StringAddIn implements AddIn {
         clearSelectedIndex();
     }
 
+    @Override
+    public void updateUI() {
+
+    }
+
     /**
      * 每次操作之后，清空选中的tag列
      */
@@ -268,4 +273,5 @@ public class StringAddIn implements AddIn {
     public void setSelectedIndex(List<Integer> selectedIndex) {
         this.selectedIndex = selectedIndex;
     }
+
 }
